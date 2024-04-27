@@ -1,7 +1,7 @@
-package Lists;
+package List;
 import java.util.Iterator;
 
-public class MyArrayList<T> implements MyList<T> {
+public class MyArrayList<T extends Object & Comparable<T>> implements MyList<T> {
     private static final int DEFAULT = 5;
     private T[] array;
     private int size;
@@ -25,12 +25,15 @@ public class MyArrayList<T> implements MyList<T> {
 
     @Override
     public void add(int index, T item) {
-        if (size >= array.length) {
+        if (size >= array.length)
             increaseSize();
+        for (int i = size; i > index; i--) {
+            array[i] = array[i - 1];
         }
-        checkIndex(index);
-        array[index] = item;
+        array[0] = item;
+        size++;
     }
+
 
     @Override
     public void addFirst(T item) {
@@ -63,13 +66,16 @@ public class MyArrayList<T> implements MyList<T> {
     }
 
     @Override
-    public void remove(int index){
+    public T remove(int index){
         checkIndex(index);
+        T removedItem = array[index];
         for(int i = index + 1; i < size; i++){
             array[i - 1] = array[i];
         }
         size--;
+        return removedItem;
     }
+
 
     @Override
     public void removeFirst(){
@@ -112,10 +118,27 @@ public class MyArrayList<T> implements MyList<T> {
         return arr;
     }
     @Override
+    public void sort() {
+        boolean swapped;
+        for (int i = 0; i < size - 1; i++) {
+            swapped = false;
+            for (int j = 0; j < size - i - 1; j++)
+                if (array[j].compareTo(array[j + 1]) > 0) {
+                    T t = array[j];
+                    array[j] = array[j + 1];
+                    array[j + 1] = t;
+                    swapped = true;
+                }
+            if (!swapped)
+                break;
+        }
+    }
+    @Override
     public void clear(){
         for(int i = 0; i < size; i++){
             array[i] = null;
         }
+        size = 0;
     }
     @Override
     public int size(){
@@ -138,6 +161,16 @@ public class MyArrayList<T> implements MyList<T> {
     public Iterator<T> iterator(){
         return new MyArrayListIterator();
     }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+    public void swap(int index, int parentIndex) {
+        T temp = array[index];
+        array[index] = array[parentIndex];
+        array[parentIndex] = temp;
+    }
+
     private class MyArrayListIterator implements Iterator<T>{
         private int currentIndex = 0;
         @Override
@@ -146,9 +179,6 @@ public class MyArrayList<T> implements MyList<T> {
         }
         @Override
         public T next(){
-            if (!hasNext()){
-                throw new java.util.NoSuchElementException();
-            }
             return array[currentIndex++];
         }
         @Override
